@@ -654,10 +654,10 @@ function Home() {
                 </span>
               </span>
             </h1>
-            <p className="mb-10 max-w-[540px] text-base leading-relaxed text-slate-300 md:text-lg motion-safe:animate-fade-up [animation-delay:200ms]">
-              Specialist-led fellowship with hands-on, case-based training. Learn online, sharpen your
-              diagnosis and treatment skills, and grow your career with expert guidance.
-            </p>
+          <p className="mb-10 max-w-[540px] text-base leading-relaxed text-slate-300 md:text-lg motion-safe:animate-fade-up [animation-delay:200ms]">
+  Specialist-led fellowship with case-based training. Learn online, sharpen your
+  diagnosis and treatment skills, and grow your career with expert guidance.
+</p>
             <div className="flex flex-col justify-start gap-4 sm:flex-row motion-safe:animate-fade-up [animation-delay:300ms]">
               <Link
                 to="/courses"
