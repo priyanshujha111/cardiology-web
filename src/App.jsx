@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import Navbar from './components/Navbar.jsx'
 import Footer from './components/Footer.jsx'
+import Breadcrumbs, { BreadcrumbProvider } from './components/Breadcrumbs.jsx'
 import Home from './pages/Home.jsx'
 import About from './pages/About.jsx'
 import CoursesPage from './pages/CoursesPage.jsx'
@@ -24,9 +25,11 @@ function ScrollToTop() {
 
 function App() {
   return (
-    <>
+    <BreadcrumbProvider>
       <ScrollToTop />
       <Navbar />
+      {/* Every page except Home; in normal flow below the sticky Navbar, so nothing overlaps */}
+      <Breadcrumbs />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
@@ -43,7 +46,7 @@ function App() {
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
       <Footer />
-    </>
+    </BreadcrumbProvider>
   )
 }
 

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import ValuesSection from '../components/ValuesSection.jsx'
+import StatsCounter from '../components/StatsCounter.jsx'
 
 const serif = "font-['Playfair_Display',serif]"
 
@@ -306,6 +307,22 @@ function About() {
           </div>
         </div>
       </section>
+
+      {/* 1b. MGA at a glance: live course counts */}
+      <StatsCounter
+        labelledBy="mga-at-a-glance"
+        heading={
+          <div className="mb-8 text-center md:mb-10">
+            <Eyebrow light>By the Numbers</Eyebrow>
+            <h2 id="mga-at-a-glance" className={`${serif} mt-4 text-3xl font-bold leading-[1.15] md:text-4xl`}>
+              MGA All <span className="italic text-[#c9a24a]">Programs</span>
+            </h2>
+            <p className="mx-auto mt-3 max-w-xl text-[#a9b8cf]">
+              Real-time counts from our course catalogue, covering every medical specialty we offer.
+            </p>
+          </div>
+        }
+      />
 
       {/* 2. Stat cards */}
       <section className="relative bg-white px-4 pt-16 sm:px-6 md:pt-20">

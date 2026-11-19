@@ -37,6 +37,19 @@ function badgeFor(course) {
   return { badge: 'Top', badgeType: 'top' }
 }
 
+// The API sends department as a JSON string ('["Medicine"]'), sometimes null or malformed.
+function parseDepartments(raw) {
+  if (!raw) return []
+  if (Array.isArray(raw)) return raw.filter((d) => typeof d === 'string')
+  try {
+    const parsed = JSON.parse(raw)
+    if (Array.isArray(parsed)) return parsed.filter((d) => typeof d === 'string')
+    return typeof parsed === 'string' ? [parsed] : []
+  } catch {
+    return typeof raw === 'string' ? [raw] : []
+  }
+}
+
 function mapCourse(course) {
   return {
     id: course.id,
@@ -44,6 +57,7 @@ function mapCourse(course) {
     title: course.name,
     courseType: course.type,
     specialty: course.category?.name || 'Cardiology',
+    departments: parseDepartments(course.department), // used by the Courses page search
     accreditation: 'CPD & ACTD',
     image: course.image ? `${IMG_BASE}${course.image}` : '',
     description: cleanDescription(course.description),
@@ -53,21 +67,34 @@ function mapCourse(course) {
   }
 }
 
-// One request per page load, shared by the list and detail pages.
+// One request per page load for the full course list (every MGA course, raw API
+// records), shared by the course pages and the About page stats.
 // A failed request is dropped from the cache so the next visit retries.
-let cached = null
+let rawCached = null
 
-export function loadCardiologyCourses() {
-  if (!cached) {
-    cached = fetch(API_URL)
+export function loadAllCourses() {
+  if (!rawCached) {
+    rawCached = fetch(API_URL)
       .then((res) => {
         if (!res.ok) throw new Error(`Request failed: ${res.status}`)
         return res.json()
       })
-      .then((data) => {
-        const list = Array.isArray(data) ? data : data.data || []
-        return list.filter(isCardiology).map(mapCourse)
+      .then((data) => (Array.isArray(data) ? data : data.data || []))
+      .catch((err) => {
+        rawCached = null
+        throw err
       })
+  }
+  return rawCached
+}
+
+// The cardiology subset in the app's course shape, used by the list and detail pages.
+let cached = null
+
+export function loadCardiologyCourses() {
+  if (!cached) {
+    cached = loadAllCourses()
+      .then((list) => list.filter(isCardiology).map(mapCourse))
       .catch((err) => {
         cached = null
         throw err

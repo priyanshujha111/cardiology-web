@@ -1,9 +1,18 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { Info } from 'lucide-react'
 import { loadCardiologyCourses } from '../data/courseApi.js'
+import { COURSE_DISCLAIMER_BODY, COURSE_DISCLAIMER_LABEL } from '../constants/disclaimer.js'
+import CourseSearch, { HighlightText } from '../components/CourseSearch.jsx'
+import { useCourseSearch } from '../hooks/useCourseSearch.js'
 
 // Matches the API's own `type` values exactly — "Pg Diploma", not "PG Diploma".
 const filters = ['All', 'Fellowship', 'Pg Diploma', 'Certificate']
+
+// Offered when a search finds nothing (each matches several cardiology courses)
+const popularSearches = ['Cardiology', 'Echocardiography', 'Fellowship']
+
+const SKELETON_CARDS = 6
 
 const badgeColors = {
   trending: 'bg-[linear-gradient(135deg,#f59e0b,#d97706)]',
@@ -68,19 +77,23 @@ function CoursesPage() {
     }
   }, [])
 
-  const visibleCourses = useMemo(
-    () =>
-      activeFilter === 'All'
-        ? courses
-        : courses.filter((course) => course.courseType === activeFilter),
-    [courses, activeFilter],
-  )
+  // Search text (?q=) + the type filter above, applied together
+  const search = useCourseSearch(courses, activeFilter)
+  const visibleCourses = search.results
+  const { query, countsByType, total } = search
+
+  let resultLine = ''
+  if (status === 'ready' && total > 0) {
+    resultLine = query
+      ? `Showing ${visibleCourses.length} of ${total} courses for “${query}”`
+      : `Showing ${visibleCourses.length} of ${total} courses`
+  }
 
   return (
     // Navbar is sticky (in flow) on this page, so top padding is only the gap below it
     <section className="relative overflow-x-hidden bg-[linear-gradient(135deg,#f8fafc,#f1f5f9)] pt-10 pb-16 font-['Lato',sans-serif] before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-[400px] before:bg-[linear-gradient(135deg,rgba(225,29,72,0.1),rgba(59,130,246,0.05))] max-[769px]:pt-5 max-[769px]:pb-12">
       <div className="relative z-1 mx-auto w-full max-w-[1280px] px-6">
-        <div className="mb-[60px] text-center motion-safe:animate-rise-in">
+        <div className="mb-8 text-center motion-safe:animate-rise-in">
           <span className="mb-5 inline-block rounded-[30px] bg-[rgba(225,29,72,0.1)] px-4 py-1.5 text-[0.875rem] font-semibold tracking-[1.5px] text-[#e11d48] uppercase backdrop-blur-[10px]">
             Trending Programs
           </span>
@@ -95,24 +108,69 @@ function CoursesPage() {
             designed for doctors. Learn from experienced faculty through
             case-based modules you can fit around your schedule.
           </p>
+          <p
+            role="note"
+            className="mx-auto mt-7 flex max-w-[700px] items-start gap-3 rounded-xl border border-[rgba(225,29,72,0.2)] bg-[rgba(255,255,255,0.7)] px-5 py-3.5 text-left text-[0.875rem] leading-[1.6] text-[#475569] backdrop-blur-[6px] max-[481px]:px-4"
+          >
+            <Info size={18} strokeWidth={2} aria-hidden="true" className="mt-[3px] shrink-0 text-[#e11d48]" />
+            <span className="min-w-0">
+              <strong className="font-semibold text-[#0f172a]">{COURSE_DISCLAIMER_LABEL}</strong>
+              {COURSE_DISCLAIMER_BODY}
+            </span>
+          </p>
         </div>
 
-        <div className="mb-12 flex flex-wrap justify-center gap-3 motion-safe:animate-rise-in-delayed">
+        <div className="mb-6 motion-safe:animate-rise-in-delayed">
+          <CourseSearch search={search} disabled={status !== 'ready'} />
+        </div>
+
+        {/* Mobile: one row that scrolls sideways. Wider screens: wraps, centered. */}
+        <div className="-mx-6 mb-4 flex gap-3 overflow-x-auto px-6 py-1 [scrollbar-width:none] motion-safe:animate-rise-in-delayed sm:mx-0 sm:flex-wrap sm:justify-center sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden">
           {filters.map((filter) => (
             <button
               key={filter}
               type="button"
-              className={`${filterBaseClass} ${activeFilter === filter ? filterActiveClass : filterIdleClass}`}
+              className={`shrink-0 whitespace-nowrap ${filterBaseClass} ${activeFilter === filter ? filterActiveClass : filterIdleClass}`}
               aria-pressed={activeFilter === filter}
               onClick={() => setActiveFilter(filter)}
             >
               {filter}
+              {status === 'ready' && (
+                <span className="ml-1.5 tabular-nums opacity-75">{countsByType[filter] ?? 0}</span>
+              )}
             </button>
           ))}
         </div>
 
+        {/* Always rendered (fixed height) so the grid doesn't jump when it appears */}
+        <p
+          aria-live="polite"
+          className="mb-8 min-h-[1.5rem] text-center text-[0.9rem] text-[#64748b]"
+        >
+          {resultLine}
+        </p>
+
         {status === 'loading' && (
-          <p className={noteClass}>Loading courses…</p>
+          <>
+            <p className="sr-only">Loading courses…</p>
+            <div
+              aria-hidden="true"
+              className="mb-[60px] grid grid-cols-[repeat(auto-fill,minmax(380px,1fr))] gap-8 max-[1025px]:grid-cols-[repeat(auto-fill,minmax(340px,1fr))] max-[1025px]:gap-6 max-[769px]:grid-cols-[1fr]"
+            >
+              {Array.from({ length: SKELETON_CARDS }, (_, i) => (
+                <div key={i} className="overflow-hidden rounded-3xl bg-white shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05),0_2px_4px_-1px_rgba(0,0,0,0.03)]">
+                  <div className="h-60 animate-pulse bg-[#e2e8f0] motion-reduce:animate-none" />
+                  <div className="space-y-3 p-6 max-[481px]:p-5">
+                    <div className="h-5 w-24 animate-pulse rounded-full bg-[#f1f5f9] motion-reduce:animate-none" />
+                    <div className="h-6 w-4/5 animate-pulse rounded-md bg-[#e2e8f0] motion-reduce:animate-none" />
+                    <div className="h-4 w-full animate-pulse rounded-md bg-[#f1f5f9] motion-reduce:animate-none" />
+                    <div className="h-4 w-2/3 animate-pulse rounded-md bg-[#f1f5f9] motion-reduce:animate-none" />
+                    <div className="mt-5 h-11 animate-pulse rounded-xl bg-[#e2e8f0] motion-reduce:animate-none" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
 
         {status === 'error' && (
@@ -121,10 +179,52 @@ function CoursesPage() {
           </p>
         )}
 
-        {status === 'ready' && visibleCourses.length === 0 && (
+        {status === 'ready' && visibleCourses.length === 0 && !query && (
           <p className={noteClass}>
             No {activeFilter.toLowerCase()} programs available at the moment.
           </p>
+        )}
+
+        {status === 'ready' && visibleCourses.length === 0 && query && (
+          <div className="mx-auto mb-[60px] max-w-[560px] rounded-3xl border border-[#e2e8f0] bg-white px-6 py-10 text-center shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)]">
+            <p className="font-['Playfair_Display',serif] text-[1.35rem] font-bold text-[#0f172a]">
+              No {activeFilter === 'All' ? '' : `${activeFilter.toLowerCase()} `}courses found for ‘{query}’
+            </p>
+            <p className="mt-2 text-[0.95rem] text-[#64748b]">
+              Check the spelling, or try one of these:
+            </p>
+            <div className="mt-5 flex flex-wrap justify-center gap-2">
+              {popularSearches.map((term) => (
+                <button
+                  key={term}
+                  type="button"
+                  onClick={() => search.searchFor(term)}
+                  className={`${filterBaseClass} ${filterIdleClass}`}
+                >
+                  {term}
+                </button>
+              ))}
+            </div>
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              <button
+                type="button"
+                onClick={search.clear}
+                className={`${filterBaseClass} ${filterActiveClass}`}
+              >
+                Clear search
+              </button>
+              {/* The text matches other types, just not this one */}
+              {activeFilter !== 'All' && countsByType.All > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setActiveFilter('All')}
+                  className={`${filterBaseClass} ${filterIdleClass}`}
+                >
+                  Show all types ({countsByType.All})
+                </button>
+              )}
+            </div>
+          </div>
         )}
 
         {status === 'ready' && visibleCourses.length > 0 && (
@@ -165,7 +265,7 @@ function CoursesPage() {
                     </span>
                   </div>
                   <h3 className="mb-3 font-['Playfair_Display',serif] text-[1.35rem] leading-[1.3] font-bold text-[#0f172a] transition-[color] duration-300 ease-[ease] group-hover:text-[#e11d48] motion-reduce:transition-none">
-                    {course.title}
+                    <HighlightText text={course.title} query={query} />
                   </h3>
                   <p className="mb-5 text-[0.9rem] leading-[1.5] text-[#64748b]">
                     {truncate(course.description)}

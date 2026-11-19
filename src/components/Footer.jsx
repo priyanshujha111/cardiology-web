@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import CoursesButton from './CoursesButton.jsx'
+import { COURSE_DISCLAIMER_BODY, COURSE_DISCLAIMER_LABEL } from '../constants/disclaimer.js'
 
 // Same logo the Navbar uses; falls back to the "MGA" box if it fails to load
 const LOGO_URL = 'https://medicalglobalacademy.com/wp-content/uploads/2026/08/logo_new.png'
@@ -14,6 +16,7 @@ const coursesOfType = (type) => `/courses?type=${encodeURIComponent(type)}`
 const linkGroups = [
   {
     heading: 'Explore',
+    showCoursesButton: true,
     links: [
       { to: '/', label: 'Home' },
       { to: '/about', label: 'About ' },
@@ -78,24 +81,26 @@ const focusRing =
   'focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-[#c9a24a]'
 
 const headingClass =
-  'relative mb-6 pb-3 text-[15px] font-bold tracking-[0.02em] text-white after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-7 after:rounded-[2px] after:bg-[#c9a24a]'
+  'relative mb-3.5 pb-2 text-[15px] font-bold tracking-[0.02em] text-white after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-7 after:rounded-[2px] after:bg-[#c9a24a]'
 
-const linkClass = `rounded-[4px] text-[14px] underline decoration-transparent decoration-1 underline-offset-4 transition-[color,text-decoration-color] duration-200 ease-[ease] hover:decoration-[#c9a24a] motion-reduce:transition-none ${focusRing}`
+// Font size is set per use (text-sm in columns, 13px in the bottom bar)
+const linkClass = `rounded-[4px] underline decoration-transparent decoration-1 underline-offset-4 transition-[color,text-decoration-color] duration-200 ease-[ease] hover:decoration-[#c9a24a] motion-reduce:transition-none ${focusRing}`
 
-const contactRowClass = 'flex min-w-0 items-start gap-3 text-[14px] leading-[1.55] text-white'
+const contactRowClass = 'flex min-w-0 items-start gap-3 text-sm leading-[1.55] text-white'
 
-const contactLinkClass = `min-w-0 rounded-[4px] wrap-anywhere text-white hover:underline hover:decoration-[#c9a24a] hover:underline-offset-4 ${focusRing}`
+// Email stays on one line from tablet up; on small phones it may break only as a last resort
+const contactLinkClass = `min-w-0 rounded-[4px] wrap-anywhere text-white sm:whitespace-nowrap hover:underline hover:decoration-[#c9a24a] hover:underline-offset-4 ${focusRing}`
 
 const contactIconClass = 'mt-[3px] h-4 w-4 shrink-0 text-[#c9a24a]'
 
 const badgeClass =
-  'inline-flex items-center gap-[7px] rounded-lg border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.04)] px-3 py-1.5 text-[13px] leading-[1.3] whitespace-nowrap text-[#cbd5e1]'
+  'inline-flex items-center gap-1.5 rounded-lg border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.04)] px-2.5 py-1 text-[12px] leading-[1.3] whitespace-nowrap text-[#cbd5e1]'
 
-const badgeIconClass = 'h-[15px] w-[15px] shrink-0 text-[#c9a24a]'
+const badgeIconClass = 'h-[14px] w-[14px] shrink-0 text-[#c9a24a]'
 
 function SocialIcon({ path, color }) {
   return (
-    <svg className="h-[15px] w-[15px]" viewBox="0 0 24 24" fill={color} aria-hidden="true" focusable="false">
+    <svg className="h-[14px] w-[14px]" viewBox="0 0 24 24" fill={color} aria-hidden="true" focusable="false">
       <path d={path} />
     </svg>
   )
@@ -142,10 +147,12 @@ function Footer() {
   return (
     // ::before is the thin gold line at the very top of the footer
     <footer className="bg-[#0b2545] font-['DM_Sans',system-ui,-apple-system,'Segoe_UI',Roboto,Arial,sans-serif] text-[15px] leading-[1.5] text-[#cbd5e1] before:block before:h-px before:bg-[linear-gradient(90deg,transparent,rgba(201,162,74,0.55),transparent)]">
-      {/* Desktop: 4 columns with real breathing room and thin dividers between them */}
-      <div className="mx-auto grid max-w-[1200px] grid-cols-2 gap-x-7 gap-y-11 px-5 pt-14 pb-11 max-[360px]:grid-cols-1 sm:gap-x-11 sm:gap-y-[52px] sm:px-7 sm:pt-18 sm:pb-14 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,0.9fr)_minmax(0,1fr)_minmax(0,1.3fr)] lg:gap-0 lg:px-8 lg:pt-20 lg:pb-16">
+      {/* Mobile: 1 column. Tablet: 2 columns. Desktop: 4 columns with thin dividers;
+          the link/contact columns size to their content so nothing wraps, the brand
+          column takes the rest. All columns align to the top. */}
+      <div className="mx-auto grid max-w-[1200px] grid-cols-1 items-start gap-y-7 px-5 py-8 sm:grid-cols-2 sm:gap-x-10 sm:gap-y-8 sm:px-7 lg:grid-cols-[minmax(0,1fr)_auto_auto_auto] lg:gap-0 lg:px-8 lg:py-10">
         {/* Left: brand */}
-        <div className="col-span-full lg:col-auto lg:pr-12 xl:pr-16">
+        <div className="lg:pr-5 xl:pr-10">
           <Link
             to="/"
             className={`inline-flex items-center gap-3 rounded-[6px] text-white ${focusRing}`}
@@ -166,17 +173,17 @@ function Footer() {
                 height="256"
                 loading="lazy"
                 onError={() => setLogoFailed(true)}
-                className="h-10 w-auto object-contain"
+                className="h-9 w-auto object-contain"
               />
             )}
             <span className="text-[19px] leading-[1.2] font-bold">Medical Global Academy</span>
           </Link>
-          <p className="mt-5 max-w-[320px] text-[14px] leading-[1.7] text-[#a9b8cf]">
+          <p className="mt-3 max-w-[280px] text-sm leading-normal text-[#a9b8cf]">
             Certificate and fellowship programs that let practising doctors specialise without
             stepping away from clinical work.
           </p>
 
-          <ul className="mt-[22px] flex flex-wrap gap-2.5">
+          <ul className="mt-3 flex flex-wrap gap-2">
             <li className={badgeClass}>
               <LayersIcon />
               <span>CPD &amp; ACTD Accredited</span>
@@ -187,7 +194,7 @@ function Footer() {
             </li>
           </ul>
 
-          <ul className="mt-[26px] flex flex-wrap gap-2.5">
+          <ul className="mt-3 flex flex-wrap gap-2">
             {socials.map((s) => (
               <li key={s.label}>
                 <a
@@ -195,7 +202,7 @@ function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`Medical Global Academy on ${s.label}`}
-                  className={`flex h-[38px] w-[38px] items-center justify-center rounded-full border border-[rgba(255,255,255,0.1)] bg-[#133560] transition-[background-color,border-color,translate] duration-200 ease-[ease] hover:border-[#c9a24a] motion-safe:hover:-translate-y-0.5 motion-reduce:transition-none ${focusRing}`}
+                  className={`flex h-8 w-8 items-center justify-center rounded-full border border-[rgba(255,255,255,0.1)] bg-[#133560] transition-[background-color,border-color,translate] duration-200 ease-[ease] hover:border-[#c9a24a] motion-safe:hover:-translate-y-0.5 motion-reduce:transition-none ${focusRing}`}
                 >
                   <SocialIcon path={s.path} color={s.color} />
                 </a>
@@ -209,25 +216,26 @@ function Footer() {
           <nav
             key={group.heading}
             aria-label={group.heading}
-            className="lg:border-l lg:border-[rgba(255,255,255,0.1)] lg:px-10 xl:px-[52px]"
+            className="lg:border-l lg:border-[rgba(255,255,255,0.1)] lg:px-5 xl:px-10"
           >
             <h2 className={headingClass}>{group.heading}</h2>
-            <ul className="grid gap-3.5">
+            <ul className="grid gap-2 leading-snug">
               {group.links.map((l) => (
                 <li key={l.label}>
-                  <Link to={l.to} className={`text-[#cbd5e1] hover:text-white ${linkClass}`}>
+                  <Link to={l.to} className={`text-sm text-[#cbd5e1] hover:text-white ${linkClass}`}>
                     {l.label}
                   </Link>
                 </li>
               ))}
             </ul>
+            {group.showCoursesButton && <CoursesButton className="mt-3.5" />}
           </nav>
         ))}
 
         {/* Right: contact details */}
-        <div className="col-span-full lg:col-auto lg:border-l lg:border-[rgba(255,255,255,0.1)] lg:pr-0 lg:pl-10 xl:pl-[52px]">
+        <div className="lg:border-l lg:border-[rgba(255,255,255,0.1)] lg:pl-5 xl:pl-10">
           <h2 className={headingClass}>Contact us</h2>
-          <ul className="grid gap-4">
+          <ul className="grid gap-2.5">
             <li className={contactRowClass}>
               <MailIcon />
               <a href={`mailto:${EMAIL}`} className={contactLinkClass}>
@@ -241,21 +249,31 @@ function Footer() {
               </a>
             </li>
           </ul>
+          <CoursesButton className="mt-4" />
         </div>
       </div>
 
       <div className="border-t border-[rgba(255,255,255,0.1)]">
+        <div className="mx-auto max-w-[1200px] px-5 pt-3 sm:px-7 lg:px-8">
+          <p
+            role="note"
+            className="mx-auto max-w-[900px] text-center text-xs leading-normal text-[#a9b8cf]/90"
+          >
+            <strong className="font-semibold text-[#c9a24a]">{COURSE_DISCLAIMER_LABEL}</strong>
+            {COURSE_DISCLAIMER_BODY}
+          </p>
+        </div>
         {/* Bottom bar: copyright + legal links. Extra side padding keeps the text
             clear of the floating chat button at the bottom-right of the page. */}
-        <div className="mx-auto flex max-w-[1200px] flex-col items-center gap-3.5 px-[72px] pt-[26px] pb-[max(26px,env(safe-area-inset-bottom))] text-center max-[360px]:px-4 max-[360px]:pb-[max(80px,env(safe-area-inset-bottom))] sm:pr-24 sm:pl-7 md:flex-row md:justify-between md:text-left">
-          <p className="text-[14px] text-[#a9b8cf]">
+        <div className="mx-auto flex max-w-[1200px] flex-col items-center gap-2 px-[72px] pt-3 pb-[max(14px,env(safe-area-inset-bottom))] text-center max-[360px]:px-4 max-[360px]:pb-[max(72px,env(safe-area-inset-bottom))] sm:pr-24 sm:pl-7 lg:flex-row lg:justify-between lg:text-left lg:pl-8">
+          <p className="text-[13px] text-[#a9b8cf]">
             © {new Date().getFullYear()} Medical Global Academy. All rights reserved.
           </p>
           <nav aria-label="Legal">
-            <ul className="flex flex-wrap justify-center gap-x-7 gap-y-2 md:justify-end">
+            <ul className="flex flex-wrap justify-center gap-x-5 gap-y-1.5 lg:justify-end">
               {legalLinks.map((l) => (
                 <li key={l.label}>
-                  <Link to={l.to} className={`text-[#a9b8cf] ${linkClass}`}>
+                  <Link to={l.to} className={`text-[13px] text-[#a9b8cf] ${linkClass}`}>
                     {l.label}
                   </Link>
                 </li>

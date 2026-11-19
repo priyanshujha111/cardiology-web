@@ -388,26 +388,8 @@ function CourseView({ course, related }) {
         />
 
         <div className="relative mx-auto max-w-285 px-4 py-10 sm:px-6 md:py-14 lg:py-20">
+          {/* The breadcrumb is the site-wide one in App.jsx (components/Breadcrumbs.jsx) */}
           <div className="flex flex-col gap-3 text-sm sm:flex-row sm:items-center sm:justify-between motion-safe:animate-fade-up">
-            <nav aria-label="Breadcrumb" className="min-w-0">
-              <ol className="flex min-w-0 items-center gap-2 text-xs text-slate-400 sm:text-sm">
-                <li>
-                  <Link to="/" className="transition-colors hover:text-[#c9a24a]">
-                    Home
-                  </Link>
-                </li>
-                <li aria-hidden="true">/</li>
-                <li>
-                  <Link to="/courses" className="transition-colors hover:text-[#c9a24a]">
-                    Courses
-                  </Link>
-                </li>
-                <li aria-hidden="true">/</li>
-                <li aria-current="page" className="min-w-0 truncate text-slate-200">
-                  {course.title}
-                </li>
-              </ol>
-            </nav>
             <Link
               to="/courses"
               className="inline-flex shrink-0 items-center gap-2 self-start rounded-full text-sm font-semibold text-[#e6c573] transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c9a24a] sm:self-auto"
