@@ -12,6 +12,7 @@ const pages = [
   { to: '/about', label: 'About' },
   { to: '/courses', label: 'Courses' },
   { to: '/doctors', label: 'Faculty' },
+  { to: '/contact', label: 'Contact Us' },
   { to: '/terms', label: 'Terms of Service' },
   { to: '/privacy', label: 'Privacy Policy' },
   { to: '/refund-policy', label: 'Refund Policy' },

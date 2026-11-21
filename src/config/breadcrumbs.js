@@ -15,6 +15,7 @@ const narrow = 'max-w-[1140px] px-4 sm:px-6' // About, course detail, legal page
 export const breadcrumbRoutes = [
   { path: '/', label: 'Home' },
   { path: '/about', label: 'About', parent: '/', container: narrow, tone: 'dark' },
+  { path: '/contact', label: 'Contact', parent: '/', container: narrow, tone: 'dark' },
   {
     path: '/courses',
     label: 'Courses',

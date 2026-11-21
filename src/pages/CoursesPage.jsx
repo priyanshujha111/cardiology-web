@@ -14,6 +14,9 @@ const popularSearches = ['Cardiology', 'Echocardiography', 'Fellowship']
 
 const SKELETON_CARDS = 6
 
+// Cards shown at first, and how many more each "Load More" click reveals
+const PAGE_SIZE = 12
+
 const badgeColors = {
   trending: 'bg-[linear-gradient(135deg,#f59e0b,#d97706)]',
   top: 'bg-[linear-gradient(135deg,#ef4444,#dc2626)]',
@@ -82,11 +85,23 @@ function CoursesPage() {
   const visibleCourses = search.results
   const { query, countsByType, total } = search
 
+  // "Load More": every matching course stays in the DOM (so crawlers see all of
+  // them); cards past `shownCount` are only hidden with CSS. The count goes back
+  // to PAGE_SIZE whenever the filter or search text changes.
+  const pagingKey = `${activeFilter}|${query}`
+  const [paging, setPaging] = useState({ key: pagingKey, count: PAGE_SIZE })
+  const shownCount = paging.key === pagingKey ? paging.count : PAGE_SIZE
+  const shownTotal = Math.min(shownCount, visibleCourses.length)
+  const hasMore = shownCount < visibleCourses.length
+  const loadMore = () => setPaging({ key: pagingKey, count: shownCount + PAGE_SIZE })
+
   let resultLine = ''
   if (status === 'ready' && total > 0) {
+    const matching =
+      visibleCourses.length === total ? `${total}` : `${visibleCourses.length} matching`
     resultLine = query
-      ? `Showing ${visibleCourses.length} of ${total} courses for “${query}”`
-      : `Showing ${visibleCourses.length} of ${total} courses`
+      ? `Showing ${shownTotal} of ${matching} courses for “${query}”`
+      : `Showing ${shownTotal} of ${matching} courses`
   }
 
   return (
@@ -228,11 +243,16 @@ function CoursesPage() {
         )}
 
         {status === 'ready' && visibleCourses.length > 0 && (
-          <div className="mb-[60px] grid grid-cols-[repeat(auto-fill,minmax(380px,1fr))] gap-8 max-[1025px]:grid-cols-[repeat(auto-fill,minmax(340px,1fr))] max-[1025px]:gap-6 max-[769px]:grid-cols-[1fr]">
+          <>
+          <div
+            id="course-grid"
+            className={`grid grid-cols-[repeat(auto-fill,minmax(380px,1fr))] gap-8 max-[1025px]:grid-cols-[repeat(auto-fill,minmax(340px,1fr))] max-[1025px]:gap-6 max-[769px]:grid-cols-[1fr] ${hasMore ? 'mb-10' : 'mb-[60px]'}`}
+          >
             {visibleCourses.map((course, i) => (
               <div
-                className="group relative flex flex-col overflow-hidden rounded-3xl bg-white shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05),0_2px_4px_-1px_rgba(0,0,0,0.03)] transition-all duration-400 ease-in-out hover:shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(0,0,0,0.02)] has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-[3px] has-[a:focus-visible]:outline-[#c9a24a] motion-safe:animate-rise-in-stagger motion-safe:hover:-translate-y-2 motion-reduce:transition-none"
-                style={{ '--card-index': i }}
+                className={`${i >= shownCount ? 'hidden' : 'flex'} group relative flex-col overflow-hidden rounded-3xl bg-white shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05),0_2px_4px_-1px_rgba(0,0,0,0.03)] transition-all duration-400 ease-in-out hover:shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(0,0,0,0.02)] has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-[3px] has-[a:focus-visible]:outline-[#c9a24a] motion-safe:animate-rise-in-stagger motion-safe:hover:-translate-y-2 motion-reduce:transition-none`}
+                // Stagger restarts for each newly revealed batch
+                style={{ '--card-index': i % PAGE_SIZE }}
                 key={course.id}
               >
                 <div className="relative h-60 overflow-hidden bg-[linear-gradient(135deg,#667eea,#764ba2)]">
@@ -293,6 +313,23 @@ function CoursesPage() {
               </div>
             ))}
           </div>
+
+          {hasMore && (
+            <div className="mb-[60px] flex justify-center">
+              <button
+                type="button"
+                onClick={loadMore}
+                aria-controls="course-grid"
+                className="inline-flex h-12 cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#0a1428] px-8 text-[0.95rem] font-semibold text-white shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] transition-[background-color,color,box-shadow] duration-300 ease-[ease] hover:bg-[#c9a24a] hover:text-[#0a1428] hover:shadow-[0_8px_20px_rgba(201,162,74,0.35)] focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-[#c9a24a] motion-reduce:transition-none"
+              >
+                Load More
+                <span className="tabular-nums opacity-75">
+                  ({Math.min(PAGE_SIZE, visibleCourses.length - shownCount)} more)
+                </span>
+              </button>
+            </div>
+          )}
+          </>
         )}
 
         {status === 'ready' && courses.length > 0 && (

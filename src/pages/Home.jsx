@@ -1,6 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import ImageLightbox from '../components/ImageLightbox.jsx'
 import ProtectedImage from '../components/ProtectedImage.jsx'
 import FaqSection from '../components/FaqSection.jsx'
 import { generalFaqs } from '../data/faqs.js'
@@ -27,6 +26,12 @@ const hospitals = [
   'Jeeban Suraksha Hospital',
   'Max Hospital',
 ]
+
+// Public verification pages; every CPD / ACTD badge on this page links to these
+const accreditationLinks = {
+  CPD: 'https://directory.cpdstandards.com/providers/medical-global-academy/',
+  ACTD: 'https://www.actd.us/medicalglobalacademy/',
+}
 
 const pathwaySteps = [
   {
@@ -77,37 +82,37 @@ const testimonials = [
   {
     quote: 'The specialist-led sessions helped me strengthen my understanding of cardiology and approach clinical cases with greater confidence.',
     name: 'Dr. Rohit',
-    role: 'Cardiology | Example Hospital',
+    role: 'Cardiology',
     rating: 5,
   },
   {
     quote: 'The program provided a structured learning experience and useful insights that I can build on in my professional development.',
     name: 'Dr. Muskan',
-    role: 'Medical Professional | Example Hospital',
+    role: 'Medical Professional',
     rating: 5,
   },
   {
     quote: 'The case-based learning format made the topics easier to follow and helped me connect theory with clinical practice.',
     name: 'Dr. Divyanshu',
-    role: 'Cardiology Trainee | Example Hospital',
+    role: 'Cardiology Trainee',
     rating: 5,
   },
   {
     quote: 'I appreciated the clear teaching approach and the opportunity to revisit learning materials at a flexible pace.',
     name: 'Dr. Sumit',
-    role: 'Medical Professional | Example Hospital',
+    role: 'Medical Professional',
     rating: 5,
   },
   {
     quote: 'The course offered a helpful structure for reviewing important cardiology concepts and continuing my learning.',
     name: 'Dr. Aditya',
-    role: 'Cardiology Trainee | Example Hospital',
+    role: 'Cardiology Trainee',
     rating: 5,
   },
   {
     quote: 'The learning materials were organised and easy to follow, making it convenient to continue studying alongside other responsibilities.',
     name: 'Dr. Ishika',
-    role: 'Medical Professional | Example Hospital',
+    role: 'Medical Professional',
     rating: 5,
   },
 ]
@@ -149,51 +154,49 @@ const features = [
 const uploads = 'https://medicalglobalacademy.com/wp-content/uploads'
 
 // All four share one card size (see AccreditationCard); kind picks how the image is fitted.
-// width/height are given only for the certificates: the lightbox uses them to scale a
-// certificate up to fill the screen, while the logos open at their natural size. To serve a
-// sharper certificate in the lightbox, drop it into public/certificates/ and add one line,
-// e.g. fullSrc: '/certificates/cpd-certificate.png'.
+// Each card opens its accreditation body's public verification page in a new tab.
 const accreditations = [
   {
     src: `${uploads}/2026/09/WhatsApp-Image-2026-09-25-at-4.27.09-PM.jpeg`,
     kind: 'logo',
     title: 'CPD Accredited Badge',
+    href: accreditationLinks.CPD,
     alt: 'Accredited CPD & Training Excellence badge, PDCD1106 Dual Training & CPD Accreditation',
   },
   {
     src: `${uploads}/2026/09/WhatsApp-Image-2026-09-24-at-12.17.06-PM.jpeg`,
     kind: 'logo',
     title: 'ACTD Member Seal',
+    href: accreditationLinks.ACTD,
     alt: 'ACTD — American Council of Training and Development eagle seal',
   },
   {
     src: `${uploads}/2026/10/WhatsApp-Image-2026-10-17-at-10.15.41-AM.jpeg`,
     kind: 'certificate',
-    width: 1024,
-    height: 726,
     title: 'CPD Accreditation Certificate',
+    href: accreditationLinks.CPD,
     alt: 'Official Certificate of CPD Accreditation certifying that Medical Global Academy has achieved Dual CPD & Provider of Training Excellence status with The CPD Standards Office, provider number PDCD1106, valid 2026–2028',
   },
   {
     src: `${uploads}/2026/10/WhatsApp-Image-2026-10-17-at-5.58.43-PM.jpeg`,
     kind: 'certificate',
-    width: 1600,
-    height: 1236,
     title: 'ACTD Certificate of Accreditation',
+    href: accreditationLinks.ACTD,
     alt: 'American Council of Training and Development Certificate of Accreditation certifying Medical Global Academy as an accredited professional training institution, accreditation number GNA452N, valid until September 12, 2027',
   },
 ]
 
-function AccreditationCard({ item, onOpen, onError }) {
+function AccreditationCard({ item, onError }) {
   // Every card is the same 3:2 white tile. The image sits in an absolute box so its intrinsic
   // size can't stretch the card. Logos are centred with white space around them and are only
   // ever scaled down (max-* with auto size); certificates fill the tile with a small even inset.
   const isLogo = item.kind === 'logo'
   return (
-    <button
-      type="button"
-      onClick={() => onOpen(item)}
-      aria-label={`View ${item.title} in full size`}
+    <a
+      href={item.href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={`${item.title}: verify on the official website (opens in a new tab)`}
       className="group relative block aspect-[3/2] w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_4px_18px_rgba(22,39,74,0.06)] transition-all duration-300 hover:-translate-y-1 hover:border-[#c9a24a] hover:shadow-[0_14px_32px_rgba(22,39,74,0.12)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#16274a]/40"
     >
       <span className={isLogo ? 'absolute inset-0 flex items-center justify-center' : 'absolute inset-2'}>
@@ -206,23 +209,21 @@ function AccreditationCard({ item, onOpen, onError }) {
           className={isLogo ? 'h-auto max-h-[75%] w-auto max-w-[85%] object-contain' : 'h-full w-full object-contain'}
         />
       </span>
-      {/* Zoom cue: on hover/focus for mouse users, always visible on touch screens (no hover there). */}
+      {/* External-link cue: on hover/focus for mouse users, always visible on touch screens (no hover there). */}
       <span
         aria-hidden="true"
         className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-[#16274a]/85 text-[#c9a24a] opacity-0 shadow-md transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100 sm:right-2 sm:top-2 sm:h-8 sm:w-8 [@media(hover:none)]:opacity-100"
       >
         <svg viewBox="0 0 24 24" className="h-3 w-3 sm:h-4 sm:w-4" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round">
-          <path d="M11 18a7 7 0 100-14 7 7 0 000 14z M20 20l-4-4 M11 8v6 M8 11h6" />
+          <path d="M14 4h6v6 M20 4l-9 9 M18 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h5" />
         </svg>
       </span>
-    </button>
+    </a>
   )
 }
 
 function AccreditationSection() {
-  const [openItem, setOpenItem] = useState(null)
   const [failed, setFailed] = useState(() => new Set())
-  const closeLightbox = useCallback(() => setOpenItem(null), [])
 
   const markFailed = (src) => setFailed((prev) => new Set(prev).add(src))
   const items = accreditations.filter((a) => !failed.has(a.src))
@@ -244,12 +245,10 @@ function AccreditationSection() {
 
         <div className="mx-auto grid max-w-4xl grid-cols-2 gap-4 sm:gap-6">
           {items.map((item) => (
-            <AccreditationCard key={item.src} item={item} onOpen={setOpenItem} onError={markFailed} />
+            <AccreditationCard key={item.src} item={item} onError={markFailed} />
           ))}
         </div>
       </div>
-
-      <ImageLightbox item={openItem} onClose={closeLightbox} />
     </section>
   )
 }
@@ -265,19 +264,21 @@ const heroBadges = [
   {
     title: 'CPD Accredited',
     subtitle: 'The CPD Standards Office',
+    href: accreditationLinks.CPD,
     position: '-left-3 top-8 sm:-left-10',
     delay: '',
   },
   {
     title: 'ACTD Aligned',
     subtitle: 'American Council of Training & Development',
+    href: accreditationLinks.ACTD,
     position: '-right-3 bottom-10 sm:-right-10 lg:-right-4 xl:-right-10',
     delay: '[animation-delay:1.5s]',
   },
 ]
 
 const heroTrust = [
-  { label: 'CPD Accredited', icon: 'M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6l7-3z M9 12l2 2 4-4' },
+  { label: 'CPD Accredited', href: accreditationLinks.CPD, icon: 'M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6l7-3z M9 12l2 2 4-4' },
   {
     label: 'Specialist-led Faculty',
     icon: 'M16 19v-1a4 4 0 00-4-4H7a4 4 0 00-4 4v1 M9.5 10a3 3 0 100-6 3 3 0 000 6z M21 19v-1a4 4 0 00-3-3.87 M16 4.13a3 3 0 010 5.74',
@@ -317,8 +318,12 @@ function HeroVisual() {
       </div>
 
       {heroBadges.map((badge) => (
-        <div
+        <a
           key={badge.title}
+          href={badge.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`${badge.title}, ${badge.subtitle} (opens in a new tab)`}
           className={`absolute ${badge.position} flex max-w-[210px] items-center gap-3 rounded-2xl border border-white/60 bg-white/95 px-4 py-3 shadow-[0_14px_34px_rgba(10,20,40,0.3)] backdrop-blur motion-safe:animate-float ${badge.delay}`}
         >
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#c9a24a] text-[#0a1428]">
@@ -330,7 +335,7 @@ function HeroVisual() {
             <span className="block text-sm font-bold text-[#0a1428]">{badge.title}</span>
             <span className="block text-[11px] leading-snug text-slate-500">{badge.subtitle}</span>
           </span>
-        </div>
+        </a>
       ))}
     </div>
   )
@@ -682,7 +687,19 @@ function Home() {
                   <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-[#c9a24a]" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <path d={item.icon} />
                   </svg>
-                  {item.label}
+                  {item.href ? (
+                    <a
+                      href={item.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="rounded-sm hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c9a24a]"
+                    >
+                      {item.label}
+                      <span className="sr-only"> (opens in a new tab)</span>
+                    </a>
+                  ) : (
+                    item.label
+                  )}
                 </li>
               ))}
             </ul>
@@ -803,10 +820,6 @@ function Home() {
               className="hidden lg:block absolute top-1/2 left-0 right-0 -translate-y-1/2 z-0 px-[12%]"
             >
               <div className="h-[3px] w-full bg-gradient-to-r from-[#16274a] via-[#3a6ea5] to-[#c9a24a] rounded-full opacity-30" />
-              {/* Dots on the line between cards */}
-              <div className="absolute top-1/2 left-[30%] -translate-y-1/2 h-3 w-3 rounded-full bg-[#16274a] border-2 border-white shadow" />
-              <div className="absolute top-1/2 left-[52%] -translate-y-1/2 h-3 w-3 rounded-full bg-[#3a6ea5] border-2 border-white shadow" />
-              <div className="absolute top-1/2 left-[74%] -translate-y-1/2 h-3 w-3 rounded-full bg-[#c9a24a] border-2 border-white shadow" />
             </div>
 
             {/* Vertical connecting line (mobile/tablet) */}
@@ -888,9 +901,16 @@ function Home() {
                   {step.badges && (
                     <div className="relative z-10 mt-4 flex flex-wrap gap-2">
                       {step.badges.map((badge) => (
-                        <span
+                        <a
                           key={badge}
-                          className="inline-flex items-center gap-1 rounded-full border border-[#c9a24a]/30 bg-[#fdf8ed] px-3 py-1 text-xs font-semibold text-[#0a1428]"
+                          href={accreditationLinks[badge]}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label={`${badge} accreditation (opens in a new tab)`}
+                          // Don't let the click / Enter key also select the step card
+                          onClick={(e) => e.stopPropagation()}
+                          onKeyDown={(e) => e.stopPropagation()}
+                          className="inline-flex items-center gap-1 rounded-full border border-[#c9a24a]/30 bg-[#fdf8ed] px-3 py-1 text-xs font-semibold text-[#0a1428] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c9a24a]"
                         >
                           <svg
                             viewBox="0 0 16 16"
@@ -904,7 +924,7 @@ function Home() {
                             <path d="M3 8.5l3.5 3.5 6.5-7" />
                           </svg>
                           {badge}
-                        </span>
+                        </a>
                       ))}
                     </div>
                   )}
@@ -960,15 +980,19 @@ function Home() {
 
               <div className="mt-8 flex flex-wrap gap-3">
                 {['CPD', 'ACTD'].map((badge) => (
-                  <span
+                  <a
                     key={badge}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-[#c9a24a]/40 bg-[#fdf8ed] px-4 py-1.5 text-sm font-semibold text-[#0a1428]"
+                    href={accreditationLinks[badge]}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`${badge} Accredited (opens in a new tab)`}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-[#c9a24a]/40 bg-[#fdf8ed] px-4 py-1.5 text-sm font-semibold text-[#0a1428] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c9a24a]"
                   >
                     <svg viewBox="0 0 16 16" className="h-3.5 w-3.5 text-[#c9a24a]" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <path d="M3 8.5l3.5 3.5 6.5-7" />
                     </svg>
                     {badge} Accredited
-                  </span>
+                  </a>
                 ))}
               </div>
 

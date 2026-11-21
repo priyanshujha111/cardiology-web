@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react'
 import ProtectedImage from './ProtectedImage.jsx'
 
-// Full-size image viewer. `item` = { src, fullSrc?, alt, title }; renders nothing when null.
+// Full-size image viewer. `item` = { src, fullSrc?, alt, title, verifyHref?, verifyLabel? };
+// renders nothing when null. With `verifyHref`, a small "Verify" link (new tab) sits beside the title.
 // Shows `fullSrc` (a higher-resolution file) when given, otherwise `src`.
 // Closes on Esc, backdrop click or the close button, and locks body scroll while open.
 function ImageLightbox({ item, onClose }) {
@@ -57,9 +58,28 @@ function ImageLightbox({ item, onClose }) {
             className="block h-auto max-h-[calc(100vh-7rem)] w-auto max-w-[calc(100vw-2.5rem)] object-contain sm:max-w-[calc(100vw-5rem)]"
           />
         </div>
-        <p className="mt-2 text-center font-['Playfair_Display',serif] text-sm font-semibold text-[#16274a] sm:text-base">
-          {item.title}
-        </p>
+        <div className="mt-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5">
+          <p className="text-center font-['Playfair_Display',serif] text-sm font-semibold text-[#16274a] sm:text-base">
+            {item.title}
+          </p>
+          {item.verifyHref && (
+            <a
+              href={item.verifyHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 rounded-full border border-[#c9a24a]/50 bg-[#fdf8ed] px-3 py-1 text-xs font-semibold text-[#0a1428] transition-colors hover:bg-[#c9a24a] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c9a24a] focus-visible:ring-offset-1"
+            >
+              <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M3 8.5l3.5 3.5 6.5-7" />
+              </svg>
+              {item.verifyLabel ?? 'Verify'}
+              <svg viewBox="0 0 16 16" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M6 3h7v7 M13 3L6 10" />
+              </svg>
+              <span className="sr-only"> (opens in a new tab)</span>
+            </a>
+          )}
+        </div>
       </div>
     </div>
   )

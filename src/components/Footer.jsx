@@ -2,13 +2,11 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import CoursesButton from './CoursesButton.jsx'
 import { COURSE_DISCLAIMER_BODY, COURSE_DISCLAIMER_LABEL } from '../constants/disclaimer.js'
+import { EMAIL, EMAIL_HREF, PHONE_DISPLAY, PHONE_HREF } from '../data/contactInfo.js'
+import { socialLinks } from '../data/socialLinks.js'
 
 // Same logo the Navbar uses; falls back to the "MGA" box if it fails to load
 const LOGO_URL = 'https://medicalglobalacademy.com/wp-content/uploads/2026/08/logo_new.png'
-
-const EMAIL = 'support@medicalglobalacademy.com'
-const PHONE_DISPLAY = '+91 9310027474'
-const PHONE_HREF = 'tel:+919310027474'
 
 // `type` must match the Courses page filter values (the API's own types)
 const coursesOfType = (type) => `/courses?type=${encodeURIComponent(type)}`
@@ -22,6 +20,7 @@ const linkGroups = [
       { to: '/about', label: 'About ' },
       { to: '/courses', label: 'Courses' },
       { to: '/doctors', label: 'Doctors' },
+      { to: '/contact', label: 'Contact' },
     ],
   },
   {
@@ -40,41 +39,6 @@ const legalLinks = [
   { to: '/terms', label: 'Terms of Service' },
   { to: '/sitemap', label: 'Sitemap' },
   { to: '/refund-policy', label: 'Refund Policy' },
-]
-
-// Brand colors; LinkedIn uses its dark-mode blue because #0A66C2 is too
-// low-contrast on navy
-const socials = [
-  {
-    label: 'Instagram',
-    href: 'https://www.instagram.com/medicalglobalacademy/',
-    color: '#e4405f',
-    path: 'M12 2.16c3.2 0 3.58.01 4.85.07 3.25.15 4.77 1.69 4.92 4.92.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.15 3.23-1.66 4.77-4.92 4.92-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-3.26-.15-4.77-1.7-4.92-4.92C2.17 15.58 2.16 15.2 2.16 12s.01-3.58.07-4.85C2.38 3.92 3.9 2.38 7.15 2.23 8.42 2.17 8.8 2.16 12 2.16zM12 0C8.74 0 8.33.01 7.05.07 2.7.27.27 2.69.07 7.05.01 8.33 0 8.74 0 12s.01 3.67.07 4.95c.2 4.36 2.62 6.78 6.98 6.98C8.33 23.99 8.74 24 12 24s3.67-.01 4.95-.07c4.35-.2 6.78-2.62 6.98-6.98.06-1.28.07-1.69.07-4.95s-.01-3.67-.07-4.95c-.2-4.35-2.62-6.78-6.98-6.98C15.67.01 15.26 0 12 0zm0 5.84a6.16 6.16 0 1 0 0 12.32 6.16 6.16 0 0 0 0-12.32zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.4-11.85a1.44 1.44 0 1 0 0 2.88 1.44 1.44 0 0 0 0-2.88z',
-  },
-  {
-    label: 'LinkedIn',
-    href: 'https://www.linkedin.com/company/108696261/',
-    color: '#70b5f9',
-    path: 'M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z',
-  },
-  {
-    label: 'X',
-    href: 'https://x.com/MGA_Courses',
-    color: '#ffffff',
-    path: 'M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.66l-5.21-6.82-5.97 6.82H1.67l7.73-8.84L1.25 2.25h6.83l4.71 6.23 5.45-6.23zm-1.16 17.52h1.83L7.08 4.13H5.12l11.96 15.64z',
-  },
-  {
-    label: 'YouTube',
-    href: 'https://www.youtube.com/@MedicalGlobalAcademy',
-    color: '#ff0000',
-    path: 'M23.5 6.2a2.98 2.98 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6a2.98 2.98 0 0 0-2.1 2.1A31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 2.98 2.98 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a2.98 2.98 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.6 15.5V8.5l6.4 3.5-6.4 3.5z',
-  },
-  {
-    label: 'Facebook',
-    href: 'https://www.facebook.com/medicalglobalacademy1',
-    color: '#1877f2',
-    path: 'M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.78-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.44 2.89h-2.34v6.99A10 10 0 0 0 22 12z',
-  },
 ]
 
 const focusRing =
@@ -195,13 +159,13 @@ function Footer() {
           </ul>
 
           <ul className="mt-3 flex flex-wrap gap-2">
-            {socials.map((s) => (
-              <li key={s.label}>
+            {socialLinks.map((s) => (
+              <li key={s.name}>
                 <a
-                  href={s.href}
+                  href={s.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label={`Medical Global Academy on ${s.label}`}
+                  aria-label={`Medical Global Academy on ${s.name} (opens in a new tab)`}
                   className={`flex h-8 w-8 items-center justify-center rounded-full border border-[rgba(255,255,255,0.1)] bg-[#133560] transition-[background-color,border-color,translate] duration-200 ease-[ease] hover:border-[#c9a24a] motion-safe:hover:-translate-y-0.5 motion-reduce:transition-none ${focusRing}`}
                 >
                   <SocialIcon path={s.path} color={s.color} />
@@ -238,7 +202,7 @@ function Footer() {
           <ul className="grid gap-2.5">
             <li className={contactRowClass}>
               <MailIcon />
-              <a href={`mailto:${EMAIL}`} className={contactLinkClass}>
+              <a href={EMAIL_HREF} className={contactLinkClass}>
                 {EMAIL}
               </a>
             </li>

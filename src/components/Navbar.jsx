@@ -5,11 +5,15 @@ import SignUpModal from './SignUpModal'
 
 const LOGO_URL = 'https://medicalglobalacademy.com/wp-content/uploads/2026/08/logo_new.png'
 
+// Specialty shown under the site name. Change this one value for another specialty site.
+const SPECIALTY = 'Cardiology'
+
 const links = [
   { to: '/', label: 'Home' },
   { to: '/about', label: 'About' },
   { to: '/courses', label: 'Courses' },
   { to: '/doctors', label: 'Doctors' },
+  { to: '/contact', label: 'Contact' },
 ]
 
 const SCROLL_THRESHOLD = 12
@@ -106,6 +110,17 @@ function Navbar() {
     </>
   )
 
+  const specialtyLabel = SPECIALTY && (
+    <span
+      className={`mt-0.5 flex items-center gap-1.5 whitespace-nowrap text-[10px] font-semibold uppercase leading-none tracking-[0.22em] transition-colors duration-300 md:text-[11px] ${
+        solid ? 'text-slate-500' : 'text-white/70'
+      }`}
+    >
+      <span aria-hidden="true" className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#c9a24a]" />
+      {SPECIALTY}
+    </span>
+  )
+
   return (
     <>
     <header
@@ -119,12 +134,15 @@ function Navbar() {
       <div className="mx-auto flex max-w-[1280px] items-center justify-between px-4 sm:px-6 xl:px-8 py-3 md:py-4 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:gap-8">
         <Link to="/" onClick={close} aria-label="Medical Global Academy — Home" className="flex shrink-0 items-center gap-3 justify-self-start">
           {logoFailed ? (
-            <span
-              className={`font-['Playfair_Display',serif] text-lg md:text-xl font-bold transition-colors duration-300 ${
-                solid ? 'text-[#0a1428]' : 'text-white'
-              }`}
-            >
-              Medical Global Academy
+            <span className="flex flex-col">
+              <span
+                className={`font-['Playfair_Display',serif] text-lg md:text-xl font-bold transition-colors duration-300 ${
+                  solid ? 'text-[#0a1428]' : 'text-white'
+                }`}
+              >
+                Medical Global Academy
+              </span>
+              {specialtyLabel}
             </span>
           ) : (
             <>
@@ -137,12 +155,16 @@ function Navbar() {
                 onError={() => setLogoFailed(true)}
                 className="h-11 w-auto object-contain md:h-[52px]"
               />
-              <span
-                className={`hidden xl:block whitespace-nowrap font-['Playfair_Display',serif] text-lg leading-tight font-bold transition-colors duration-300 ${
-                  solid ? 'text-[#0a1428]' : 'text-white'
-                }`}
-              >
-                Medical Global Academy
+              {/* Site name only fits from xl up; the specialty label shows at every size */}
+              <span className="flex flex-col">
+                <span
+                  className={`hidden xl:block whitespace-nowrap font-['Playfair_Display',serif] text-lg leading-tight font-bold transition-colors duration-300 ${
+                    solid ? 'text-[#0a1428]' : 'text-white'
+                  }`}
+                >
+                  Medical Global Academy
+                </span>
+                {specialtyLabel}
               </span>
             </>
           )}
